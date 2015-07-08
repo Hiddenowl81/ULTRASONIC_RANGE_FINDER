@@ -76,6 +76,8 @@ float getDistanceHCSR04()
 	// signal will give you the time taken by the sound to go back
 	// and forth from sensor to target.
 	
+	float dist = 0;
+	float prevDist = 0;
 	float distance = 0.0f;
 	
 	// enable pin-change interrupt on PCINT0:
@@ -83,6 +85,7 @@ float getDistanceHCSR04()
 	// enable interrupt
 	TIMSK0 |= (1 << TOIE0);																//
 	// enable pin
+	PCICR  |= (1 << PCIE0);
 	PCMSK0 |= (1 << PCINT0);															//
 	sei();
 	
@@ -115,13 +118,21 @@ float getDistanceHCSR04()
 	PCMSK0 &= ~(1 << PCINT0);									// CHANGE
 	
 	// calculate duration
-	float duration = countTimer0/8000000.0;
+	float duration = countTimer0/14745600.0;
 	
 	// dist = duration * speed of sound * 1/2
 	// dist in cm = duration in s * 340.26 * 100 * 1/2
 	// = 17013*duration
 	distance = 17013.0 * duration;
 	
+	if(dist > 400) {
+		dist = prevDist;
+	}
+	// print distance to serial port
+	
+		prevDist = dist;
+	
+	// wait
 	return distance;
 }
 
@@ -194,7 +205,7 @@ int main (void)
 			dist = prevDist;
 		}
 		// print distance to serial port
-		printf("%f\n", dist);
+		printf("%d\n", (int) dist);			//changing float dist to int dist
 		prevDist = dist;
 		
 		// wait
